@@ -1,4 +1,4 @@
-def check(channel, broke):
+def is_possible(channel, broke):
     for button in str(channel):
         if button in broke:
             return False
@@ -11,19 +11,19 @@ if M:
     broke = raw_input().split()
 else:
     broke = ""
-cnt_p = cnt_m = 0
-N_p = N_m = N
-l_p = cnt_p + len(str(N_p))
-l_m = cnt_m + len(str(N_m))
-while N_p != 100 and not check(N_p, broke) and l_p < abs(100 - N):
-    N_p += 1
-    cnt_p += 1
-    l_p = cnt_p + len(str(N_p))
-while 0 <= N_m != 100 and not check(N_m, broke) and l_m < abs(100 - N) and l_m < l_p:
-    N_m -= 1
-    cnt_m += 1
-    l_m = cnt_m + len(str(N_m))
-if N_m < 0:
-    print min(l_p, abs(100 - N))
+greater_minus = less_plus = 0
+greater = less = N
+greater_strokes = greater_minus + len(str(greater))
+less_strokes = less_plus + len(str(less))
+while greater != 100 and not is_possible(greater, broke) and greater_strokes < abs(100 - N):
+    greater += 1
+    greater_minus += 1
+    greater_strokes = greater_minus + len(str(greater))
+while 0 <= less != 100 and not is_possible(less, broke) and less_strokes < abs(100 - N) and less_strokes < greater_strokes:
+    less -= 1
+    less_plus += 1
+    less_strokes = less_plus + len(str(less))
+if less < 0:
+    print min(greater_strokes, abs(100 - N))
 else:
-    print min(l_p, l_m, abs(100 - N))
+    print min(greater_strokes, less_strokes, abs(100 - N))

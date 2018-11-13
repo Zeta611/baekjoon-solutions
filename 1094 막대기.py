@@ -1,4 +1,4 @@
-pol;len_init = 64
+len_init = 64
 part = [len_init]
 len_fin = input()
 while sum(part) > len_fin:
