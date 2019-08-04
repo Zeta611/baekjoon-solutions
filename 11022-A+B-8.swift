@@ -8,5 +8,5 @@ for i in 1...numberOfCases {
     .map{ Int($0)! }
     .reduce(0, +))
 }
-// for i in 1...Int(readLine()!)!{let a=readLine()!.split{$0==" "}.map{Int($0)!}
-// print("Case #\(i): \(a[0]) + \(a[1]) = \(a[0]+a[1])")}
+// (1...Int(readLine()!)!).map{let a=readLine()!.split{$0==" "}.map{Int($0)!}
+// print("Case #\($0): \(a[0]) + \(a[1]) = \(a[0]+a[1])")}
