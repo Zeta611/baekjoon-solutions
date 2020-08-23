@@ -1,0 +1,16 @@
+(define (check)
+  (let ((a (read)) (b (read)))
+    (cond ((and (= a 0) (= b 0)) #f)
+          ((and (<= a b)
+                (= (remainder b a) 0))
+           (display "factor\n")
+           (check))
+          ((and (>= a b)
+                (= (remainder a b) 0))
+           (display "multiple\n")
+           (check))
+          (else
+           (display "neither\n")
+           (check)))))
+
+(check)
