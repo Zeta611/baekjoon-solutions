@@ -1,9 +1,10 @@
-# -*- coding:utf-8 -*-
-# Olympiad > 한국정보올림피아드시․도지역본선 > 지역본선 2006 > 고등부 3
-M, N = map(int, raw_input().split())
+import sys
+sys.setrecursionlimit(1200)
+
+M, N = map(int, input().split())
 table = [None] * M
-for i in xrange(M):
-    table[i] = map(int, raw_input().split())
+for i in range(M):
+    table[i] = list(map(int, input().split()))
 
 
 def path_case(i, j, memo=dict()):
@@ -67,4 +68,4 @@ def path_case(i, j, memo=dict()):
     return path
 
 
-print path_case(M - 1, N - 1)
+print(path_case(M - 1, N - 1))
