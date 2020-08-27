@@ -16,18 +16,14 @@ int main()
 
     int m;
     std::cin >> m;
-    int *b = new int[m];
     for (int i = 0; i < m; ++i) {
-        std::cin >> b[i];
-    }
-
-    for (int i = 0; i < m; ++i) {
-        std::cout << (std::binary_search(a, a + n, b[i]) ? 1 : 0)
+        int b;
+        std::cin >> b;
+        std::cout << (std::binary_search(a, a + n, b) ? 1 : 0)
                   << '\n';
     }
 
     delete[] a;
-    delete[] b;
 
     return 0;
 }
