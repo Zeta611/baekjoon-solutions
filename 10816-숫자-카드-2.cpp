@@ -1,5 +1,7 @@
 #include <algorithm>
 #include <iostream>
+#include <iterator>
+#include <vector>
 
 int main()
 {
@@ -8,11 +10,10 @@ int main()
 
     int n;
     std::cin >> n;
-    int *a = new int[n];
-    for (int i = 0; i < n; ++i) {
-        std::cin >> a[i];
-    }
-    std::sort(a, a + n);
+    std::vector<int> a;
+    a.reserve(n);
+    std::copy_n(std::istream_iterator<int>(std::cin), n, back_inserter(a));
+    std::sort(begin(a), end(a));
 
     int m;
     std::cin >> m;
@@ -20,13 +21,10 @@ int main()
         int b;
         std::cin >> b;
 
-        int *lower = std::lower_bound(a, a + n, b);
-        int *upper = std::upper_bound(lower, a + n, b);
-        std::cout << std::distance(lower, upper)
+        auto pair = std::equal_range(begin(a), end(a), b);
+        std::cout << std::distance(pair.first, pair.second)
                   << (i != m - 1 ? ' ' : '\n');
     }
-
-    delete[] a;
 
     return 0;
 }
