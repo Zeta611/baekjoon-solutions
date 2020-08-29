@@ -1,10 +1,14 @@
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <string>
 #include <tuple>
 #include <vector>
 
-typedef std::tuple<int, int, std::string> member;
+struct member : std::tuple<int, int, std::string>
+{
+    using std::tuple<int, int, std::string>::tuple;
+};
 
 std::ostream& operator<<(std::ostream& os, const member& mb)
 {
@@ -28,9 +32,8 @@ int main()
 
     std::sort(begin(members), end(members));
 
-    for (const auto& member : members) {
-        std::cout << member << '\n';
-    }
+    std::copy(begin(members), end(members),
+              std::ostream_iterator<member>(std::cout, "\n"));
 
     return 0;
 }
