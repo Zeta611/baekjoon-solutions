@@ -18,6 +18,7 @@ int main()
     std::cin >> n;
 
     std::vector<member> members;
+    members.reserve(n);
     for (int i = 0; i < n; ++i) {
         int age;
         std::string name;
@@ -25,7 +26,7 @@ int main()
         members.push_back({age, i, name});
     }
 
-    std::sort(members.begin(), members.end());
+    std::sort(begin(members), end(members));
 
     for (const auto& member : members) {
         std::cout << member << '\n';
