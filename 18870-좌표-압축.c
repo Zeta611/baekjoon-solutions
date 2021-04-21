@@ -17,7 +17,9 @@ long lower_bound(const long *arr, long len, long val)
 
 	while (first <= last) {
 		if (arr[mid] == val) {
-			return mid;
+			for (; mid >= 0 && arr[mid] == val; --mid)
+				;
+			return mid + 1;
 		} else if (arr[mid] < val) {
 			first = mid + 1;
 		} else {
@@ -25,7 +27,7 @@ long lower_bound(const long *arr, long len, long val)
 		}
 		mid = (first + last) / 2;
 	}
-	return first;
+	return -1; // Not found
 }
 
 // Returns the length of the deduplicated array.
