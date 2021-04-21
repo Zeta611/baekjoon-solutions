@@ -12,10 +12,10 @@ int cmp(const void *a, const void *b)
 long lower_bound(const long *arr, long len, long val)
 {
 	long first = 0;
-	long last = len - 1;
+	long last = len;
 	long mid = len / 2;
 
-	while (first <= last) {
+	while (first < last) {
 		if (arr[mid] == val) {
 			for (; mid >= 0 && arr[mid] == val; --mid)
 				;
@@ -23,9 +23,9 @@ long lower_bound(const long *arr, long len, long val)
 		} else if (arr[mid] < val) {
 			first = mid + 1;
 		} else {
-			last = mid - 1;
+			last = mid;
 		}
-		mid = (first + last) / 2;
+		mid = (first + last - 1) / 2;
 	}
 	return -1; // Not found
 }
