@@ -22,57 +22,49 @@ long ncnt{1};
 Node *root{nodes};
 Node *solution[MAX_DEPTH];
 
+void add_row_node(long col, long offset)
+{
+    if (offset) {
+        nodes[ncnt].prev = nodes[ncnt - offset].prev;
+        nodes[ncnt - offset].prev->next = &nodes[ncnt];
+        nodes[ncnt - offset].prev = &nodes[ncnt];
+    } else {
+        nodes[ncnt].prev = &nodes[ncnt];
+    }
+
+    ++nodes[col].d.d.len;
+    nodes[ncnt].d.col = &nodes[col];
+    nodes[ncnt].up = nodes[col].up;
+    nodes[col].up->down = &nodes[ncnt];
+    nodes[col].up = &nodes[ncnt++];
+}
+
 void init()
 {
     ncnt = 1;
     root->next = root->prev = root;
 
-    // First 81 columns representing 9*9 positions.
-    for (int row{1}; row <= WIDTH; ++row) {
-        for (int col{1}; col <= WIDTH; ++col) {
-            std::snprintf(nodes[ncnt].d.d.name, MAX_NAME, "%d,%d", row, col);
-            nodes[ncnt].prev = &nodes[ncnt - 1];
-            nodes[ncnt - 1].next = &nodes[ncnt];
-            nodes[ncnt].up = &nodes[ncnt];
-            ++ncnt;
-        }
-    }
-    // Second 81 columns representing row*num.
-    for (int row{1}; row <= WIDTH; ++row) {
-        for (int num{1}; num <= WIDTH; ++num) {
-            std::snprintf(nodes[ncnt].d.d.name, MAX_NAME, "R%d%d", row, num);
-            nodes[ncnt].prev = &nodes[ncnt - 1];
-            nodes[ncnt - 1].next = &nodes[ncnt];
-            nodes[ncnt].up = &nodes[ncnt];
-            ++ncnt;
-        }
-    }
-    // Third 81 columns representing col*num.
-    for (int col{1}; col <= WIDTH; ++col) {
-        for (int num{1}; num <= WIDTH; ++num) {
-            std::snprintf(nodes[ncnt].d.d.name, MAX_NAME, "C%d%d", col, num);
-            nodes[ncnt].prev = &nodes[ncnt - 1];
-            nodes[ncnt - 1].next = &nodes[ncnt];
-            nodes[ncnt].up = &nodes[ncnt];
-            ++ncnt;
-        }
-    }
+    // First 81 columns representing 9*9 positions;
+    // Second 81 columns representing row*num;
+    // Third 81 columns representing col*num;
     // Last 81 columns representing box*num.
-    for (int box{1}; box <= WIDTH; ++box) {
-        for (int num{1}; num <= WIDTH; ++num) {
-            std::snprintf(nodes[ncnt].d.d.name, MAX_NAME, "B%d%d", box, num);
-            nodes[ncnt].prev = &nodes[ncnt - 1];
-            nodes[ncnt - 1].next = &nodes[ncnt];
-            nodes[ncnt].up = &nodes[ncnt];
-            ++ncnt;
+    for (const char *fmt : {"%d,%d", "R%d%d", "C%d%d", "B%d%d"}) {
+        for (int i{1}; i <= WIDTH; ++i) {
+            for (int j{1}; j <= WIDTH; ++j) {
+                std::snprintf(nodes[ncnt].d.d.name, MAX_NAME, fmt, i, j);
+                nodes[ncnt].prev = &nodes[ncnt - 1];
+                nodes[ncnt - 1].next = &nodes[ncnt];
+                nodes[ncnt].up = &nodes[ncnt];
+                ++ncnt;
+            }
         }
     }
     nodes[COL_SIZE].next = root;
     root->prev = &nodes[COL_SIZE];
 
     // Input rows
-    for (long row{1}; row <= WIDTH; ++row) {
-        for (long col{1}; col <= WIDTH; ++col) {
+    for (long row{0}; row < WIDTH; ++row) {
+        for (long col{0}; col < WIDTH; ++col) {
             int digit;
             std::cin >> digit;
             for (int d{1}; d <= WIDTH; ++d) {
@@ -80,52 +72,14 @@ void init()
                     continue;
                 }
                 // position
-                const long pos{WIDTH * (row - 1) + col};
-                nodes[ncnt].prev = &nodes[ncnt];
-
-                ++nodes[pos].d.d.len;
-                nodes[ncnt].d.col = &nodes[pos];
-                nodes[ncnt].up = nodes[pos].up;
-                nodes[pos].up->down = &nodes[ncnt];
-                nodes[pos].up = &nodes[ncnt++];
-
+                add_row_node(WIDTH * row + col + 1, 0);
                 // row*digit
-                const long rd{SQU_SIZE + WIDTH * (row - 1) + d};
-                nodes[ncnt].prev = nodes[ncnt - 1].prev;
-                nodes[ncnt - 1].prev->next = &nodes[ncnt];
-                nodes[ncnt - 1].prev = &nodes[ncnt];
-
-                ++nodes[rd].d.d.len;
-                nodes[ncnt].d.col = &nodes[rd];
-                nodes[ncnt].up = nodes[rd].up;
-                nodes[rd].up->down = &nodes[ncnt];
-                nodes[rd].up = &nodes[ncnt++];
-
+                add_row_node(SQU_SIZE + WIDTH * row + d, 1);
                 // col*digit
-                const long cd{2 * SQU_SIZE + WIDTH * (col - 1) + d};
-                nodes[ncnt].prev = nodes[ncnt - 2].prev;
-                nodes[ncnt - 2].prev->next = &nodes[ncnt];
-                nodes[ncnt - 2].prev = &nodes[ncnt];
-
-                ++nodes[cd].d.d.len;
-                nodes[ncnt].d.col = &nodes[cd];
-                nodes[ncnt].up = nodes[cd].up;
-                nodes[cd].up->down = &nodes[ncnt];
-                nodes[cd].up = &nodes[ncnt++];
-
+                add_row_node(2 * SQU_SIZE + WIDTH * col + d, 2);
                 // box*digit
-                const long bd{3 * SQU_SIZE +
-                              WIDTH * ((row - 1) / 3 * 3 + (col - 1) / 3) + d};
-                nodes[ncnt].prev = nodes[ncnt - 3].prev;
-                nodes[ncnt - 3].prev->next = &nodes[ncnt];
-                nodes[ncnt - 3].prev = &nodes[ncnt];
-
-                ++nodes[bd].d.d.len;
-                nodes[ncnt].d.col = &nodes[bd];
-                nodes[ncnt].up = nodes[bd].up;
-                nodes[bd].up->down = &nodes[ncnt];
-                nodes[bd].up = &nodes[ncnt++];
-
+                add_row_node(3 * SQU_SIZE + WIDTH * (row / 3 * 3 + col / 3) + d,
+                             3);
                 nodes[ncnt - 4].prev->next = &nodes[ncnt - 4];
             }
         }
