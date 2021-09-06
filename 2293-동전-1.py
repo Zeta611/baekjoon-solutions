@@ -1,18 +1,18 @@
-n, k = map(int, raw_input().split())
-coin = [0] * (n + 1)
-for i in range(1, n + 1):
-    coin[i] = input()
+n, k = map(int, input().split())
+price = [0] * n
+for i in range(n):
+    price[i] = int(input())
 
-dp = [[1] + [0] * k for _ in xrange(n + 1)]
+dp = [1] + [0] * k
 
-for i in xrange(1, n + 1):
-    for j in xrange(k + 1):
-        if coin[i] > j:
-            dp[i][j] = dp[i - 1][j]
-        else:
-            dp[i][j] = dp[i - 1][j] + dp[i][j - coin[i]]
-print dp[-1][-1]
+for i in range(n):
+    for j in range(k + 1):
+        if j - price[i] >= 0:
+            dp[j] = dp[j] + dp[j - price[i]]
 
-# dp[i][j]: Making j using 1 ~ i coins
-# dp[i][j] = dp[i - 1][j]                           if coin[i] > j
-# dp[i][j] = dp[i - 1][j] + dp[i][j - coin[i]] + 1  if coin[i] <= j
+print(dp[-1])
+
+# f(n, k): Making k using price[0] ~ price[n - 1]
+# f(n, k) = 1 if k == 0,
+#           0 else if n == 0,
+#           f(n - 1, k) + f(n, k - price[n - 1])  otherwise.
