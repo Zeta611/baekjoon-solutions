@@ -6,43 +6,42 @@ constexpr int MAX_NAME{4};
 constexpr int WIDTH{9};
 constexpr int SQU_SIZE{WIDTH * WIDTH};
 constexpr int COL_SIZE{SQU_SIZE * 4};
-constexpr long MAX_NODES{COL_SIZE * WIDTH * SQU_SIZE + 1};
+constexpr int MAX_NODES{COL_SIZE * WIDTH * SQU_SIZE + 1};
 
 struct Node {
-    Node *up, *down, *next, *prev;
+    int up, down, next, prev;
     union {
-        Node *col;
+        int col;
         struct {
             char name[MAX_NAME];
             int len;
         } d;
     } d;
 } nodes[MAX_NODES];
-long ncnt{1};
-Node *root{nodes};
-Node *solution[MAX_DEPTH];
+int ncnt{1};
+int solution[MAX_DEPTH];
 
-void add_row_node(long col, long offset)
+void add_row_node(int col, int offset)
 {
     if (offset) {
         nodes[ncnt].prev = nodes[ncnt - offset].prev;
-        nodes[ncnt - offset].prev->next = &nodes[ncnt];
-        nodes[ncnt - offset].prev = &nodes[ncnt];
+        nodes[nodes[ncnt - offset].prev].next = ncnt;
+        nodes[ncnt - offset].prev = ncnt;
     } else {
-        nodes[ncnt].prev = &nodes[ncnt];
+        nodes[ncnt].prev = ncnt;
     }
 
     ++nodes[col].d.d.len;
-    nodes[ncnt].d.col = &nodes[col];
+    nodes[ncnt].d.col = col;
     nodes[ncnt].up = nodes[col].up;
-    nodes[col].up->down = &nodes[ncnt];
-    nodes[col].up = &nodes[ncnt++];
+    nodes[nodes[col].up].down = ncnt;
+    nodes[col].up = ncnt++;
 }
 
 void init()
 {
     ncnt = 1;
-    root->next = root->prev = root;
+    nodes[0].next = nodes[0].prev = 0;
 
     // First 81 columns representing 9*9 positions;
     // Second 81 columns representing row*num;
@@ -52,19 +51,19 @@ void init()
         for (int i{1}; i <= WIDTH; ++i) {
             for (int j{1}; j <= WIDTH; ++j) {
                 std::snprintf(nodes[ncnt].d.d.name, MAX_NAME, fmt, i, j);
-                nodes[ncnt].prev = &nodes[ncnt - 1];
-                nodes[ncnt - 1].next = &nodes[ncnt];
-                nodes[ncnt].up = &nodes[ncnt];
+                nodes[ncnt].prev = ncnt - 1;
+                nodes[ncnt - 1].next = ncnt;
+                nodes[ncnt].up = ncnt;
                 ++ncnt;
             }
         }
     }
-    nodes[COL_SIZE].next = root;
-    root->prev = &nodes[COL_SIZE];
+    nodes[COL_SIZE].next = 0;
+    nodes[0].prev = COL_SIZE;
 
     // Input rows
-    for (long row{0}; row < WIDTH; ++row) {
-        for (long col{0}; col < WIDTH; ++col) {
+    for (int row{0}; row < WIDTH; ++row) {
+        for (int col{0}; col < WIDTH; ++col) {
             int digit;
             std::cin >> digit;
             for (int d{1}; d <= WIDTH; ++d) {
@@ -80,13 +79,13 @@ void init()
                 // box*digit
                 add_row_node(3 * SQU_SIZE + WIDTH * (row / 3 * 3 + col / 3) + d,
                              3);
-                nodes[ncnt - 4].prev->next = &nodes[ncnt - 4];
+                nodes[nodes[ncnt - 4].prev].next = ncnt - 4;
             }
         }
     }
 
-    for (long c{1}; c <= COL_SIZE; ++c) {
-        nodes[c].up->down = &nodes[c];
+    for (int c{1}; c <= COL_SIZE; ++c) {
+        nodes[nodes[c].up].down = c;
     }
 }
 
@@ -94,15 +93,15 @@ int answer[WIDTH][WIDTH];
 void print_solution(int k)
 {
     for (int i{0}; i < k; ++i) {
-        Node *n{solution[i]};
+        int n{solution[i]};
         do {
-            if (n->d.col->d.d.name[1] == ',') {
-                answer[n->d.col->d.d.name[0] - '1']
-                      [n->d.col->d.d.name[2] - '1'] =
-                          n->next->d.col->d.d.name[2] - '0';
+            if (nodes[nodes[n].d.col].d.d.name[1] == ',') {
+                answer[nodes[nodes[n].d.col].d.d.name[0] - '1']
+                      [nodes[nodes[n].d.col].d.d.name[2] - '1'] =
+                          nodes[nodes[nodes[n].next].d.col].d.d.name[2] - '0';
                 break;
             }
-            n = n->next;
+            n = nodes[n].next;
         } while (n != solution[i]);
     }
 
@@ -113,39 +112,40 @@ void print_solution(int k)
     }
 }
 
-void cover(Node *col)
+void cover(int col)
 {
-    col->next->prev = col->prev;
-    col->prev->next = col->next;
-    for (Node *row{col->down}; row != col; row = row->down) {
-        for (Node *n{row->next}; n != row; n = n->next) {
-            n->up->down = n->down;
-            n->down->up = n->up;
-            --n->d.col->d.d.len;
+
+    nodes[nodes[col].next].prev = nodes[col].prev;
+    nodes[nodes[col].prev].next = nodes[col].next;
+    for (int row{nodes[col].down}; row != col; row = nodes[row].down) {
+        for (int n{nodes[row].next}; n != row; n = nodes[n].next) {
+            nodes[nodes[n].up].down = nodes[n].down;
+            nodes[nodes[n].down].up = nodes[n].up;
+            --nodes[nodes[n].d.col].d.d.len;
         }
     }
 }
 
-void uncover(Node *col)
+void uncover(int col)
 {
-    for (Node *row{col->up}; row != col; row = row->up) {
-        for (Node *n{row->prev}; n != row; n = n->prev) {
-            ++n->d.col->d.d.len;
-            n->up->down = n;
-            n->down->up = n;
+    for (int row{nodes[col].up}; row != col; row = nodes[row].up) {
+        for (int n{nodes[row].prev}; n != row; n = nodes[n].prev) {
+            ++nodes[nodes[n].d.col].d.d.len;
+            nodes[nodes[n].up].down = n;
+            nodes[nodes[n].down].up = n;
         }
     }
-    col->next->prev = col;
-    col->prev->next = col;
+    nodes[nodes[col].next].prev = col;
+    nodes[nodes[col].prev].next = col;
 }
 
-Node *select()
+int select()
 {
-    long min{MAX_NODES};
-    Node *n{nullptr};
-    for (Node *col{root->next}; col != root; col = col->next) {
-        if (col->d.d.len < min) {
-            min = col->d.d.len;
+    int min{MAX_NODES};
+    int n{-1};
+    for (int col{nodes[0].next}; col; col = nodes[col].next) {
+        if (nodes[col].d.d.len < min) {
+            min = nodes[col].d.d.len;
             n = col;
         }
     }
@@ -153,29 +153,29 @@ Node *select()
 }
 
 bool found{false};
-void search(long k = 0)
+void search(int k = 0)
 {
     if (found) {
         return;
     }
-    if (root->next == root) {
+    if (!nodes[0].next) {
         found = true;
         print_solution(k);
         return;
     }
-    Node *col{select()};
-    if (!col) {
+    int col{select()};
+    if (col == -1) {
         return;
     }
     cover(col);
-    for (Node *row{col->down}; row != col; row = row->down) {
+    for (int row{nodes[col].down}; row != col; row = nodes[row].down) {
         solution[k] = row;
-        for (Node *n{row->next}; n != row; n = n->next) {
-            cover(n->d.col);
+        for (int n{nodes[row].next}; n != row; n = nodes[n].next) {
+            cover(nodes[n].d.col);
         }
         search(k + 1);
-        for (Node *n{row->prev}; n != row; n = n->prev) {
-            uncover(n->d.col);
+        for (int n{nodes[row].prev}; n != row; n = nodes[n].prev) {
+            uncover(nodes[n].d.col);
         }
     }
     uncover(col);
