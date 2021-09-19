@@ -1,14 +1,11 @@
-#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 
-#define INF (INT_MAX - 10000)
-
-static inline int min(int a, int b) { return a < b ? a : b; }
+static inline int max(int a, int b) { return a > b ? a : b; }
 
 int memory[101];
 int cost[101];
-int dp[2][10000001];
+int dp[10001];
 
 int main(void)
 {
@@ -22,18 +19,19 @@ int main(void)
         scanf("%d", &cost[i]);
     }
 
-    for (int j = 0; j <= m; ++j) {
-        dp[0][j] = INF;
-    }
+    memset(dp, 0, sizeof dp);
     for (int i = 1; i <= n; ++i) {
-        for (int j = 0; j <= m; ++j) {
-            if (j - memory[i] <= 0) {
-                dp[1][j] = min(dp[0][j], cost[i]);
-            } else {
-                dp[1][j] = min(dp[0][j], dp[0][j - memory[i]] + cost[i]);
+        for (int j = 10000; j >= 0; --j) {
+            if (j - cost[i] >= 0) {
+                dp[j] = max(dp[j], dp[j - cost[i]] + memory[i]);
             }
         }
-        memcpy(dp[0], dp[1], sizeof dp[1]);
     }
-    printf("%d\n", dp[0][m]);
+
+    for (int j = 0; j <= 10000; ++j) {
+        if (dp[j] >= m) {
+            printf("%d\n", j);
+            break;
+        }
+    }
 }
